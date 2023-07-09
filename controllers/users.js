@@ -45,7 +45,7 @@ const updateUser = (req, res) => {
     return res.status(400).send({ message: 'Длина имени должна быть не менее 2 символов и не более 30 символов.' });
   }
 
-  if (!about || about.length < 2 || about.length > 30) {
+  if (about && (about.length < 2 || about.length > 30)) {
     return res.status(400).send({ message: 'Длина описания должна быть не менее 2 символов и не более 30 символов.' });
   }
 
