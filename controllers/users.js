@@ -41,11 +41,11 @@ const updateUser = (req, res) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
-  if (name.length < 2 || name.length > 30) {
+  if (!name || name.length < 2 || name.length > 30) {
     return res.status(400).send({ message: 'Длина имени должна быть не менее 2 символов и не более 30 символов.' });
   }
 
-  if (about && !about.length < 2 || about.length > 30) {
+  if (about && (about.length < 2 || about.length > 30)) {
     return res.status(400).send({ message: 'Длина описания должна быть не менее 2 символов и не более 30 символов.' });
   }
 
@@ -55,7 +55,7 @@ const updateUser = (req, res) => {
     { new: true }
   )
     .then(updatedUser => {
-      if (updatedUser === null) {
+      if (!updatedUser) {
         return res.status(404).send({ message: 'Пользователь с указанным _id не найден.' });
       }
 
@@ -65,6 +65,7 @@ const updateUser = (req, res) => {
       res.status(400).send(error);
     });
 };
+
 
 
 const isValidUrl = (url) => {
