@@ -45,7 +45,7 @@ const updateUser = (req, res) => {
     return res.status(400).send({ message: 'Длина имени должна быть не менее 2 символов и не более 30 символов.' });
   }
 
-  if (about.length < 2 || about.length > 30) {
+  if (!about || about.length < 2 || about.length > 30) {
     return res.status(400).send({ message: 'Длина описания должна быть не менее 2 символов и не более 30 символов.' });
   }
 
@@ -66,9 +66,22 @@ const updateUser = (req, res) => {
     });
 };
 
+const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const userId = req.user._id;
+
+  if (!avatar || !isValidUrl(avatar)) {
+    return res.status(400).send({ message: 'Некорректный URL-адрес аватара.' });
+  }
 
   User.findByIdAndUpdate(
     userId,
@@ -85,6 +98,7 @@ const updateAvatar = (req, res) => {
       res.status(400).send(error);
     });
 };
+
 
 module.exports = {
   createUser,
