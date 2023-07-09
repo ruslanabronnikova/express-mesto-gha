@@ -10,7 +10,7 @@ mongoose.connect(`mongodb://127.0.0.1:27017/mestodb`)
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   req.user = {
-    _id: '64aad7f463a598b126857c8b' 
+    _id: '64aad7f463a598b126857c8b'
   };
 
   next();
@@ -24,6 +24,3 @@ app.patch('/404', handleNotFound);
 app.listen(3000, () => {
   console.log('Привет, я сервер!')
 })
-
-
-
