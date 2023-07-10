@@ -1,5 +1,5 @@
-const User = require('../models/user');
 const mongoose = require('mongoose');
+const User = require('../models/user');
 
 const HTTP_STATUS_CODES = {
   OK: 200,

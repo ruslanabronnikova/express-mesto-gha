@@ -1,5 +1,5 @@
-const Card = require('../models/card');
 const mongoose = require('mongoose');
+const Card = require('../models/card');
 
 const HTTP_STATUS_CODES = {
   OK: 200,

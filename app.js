@@ -1,11 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const handleNotFound = require('./routes/errorHandler');
-mongoose.connect(`mongodb://127.0.0.1:27017/mestodb`)
+mongoose.connect(`mongodb://127.0.0.1:27017/mestodb`);
 
 app.use(bodyParser.json());
 app.use((req, res, next) => {

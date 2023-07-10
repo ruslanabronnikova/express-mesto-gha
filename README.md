@@ -4,7 +4,7 @@
 
 ## Ссылка на репозиторий 
 
-![Alt-текст](https://github.com/ruslanabronnikova/express-mesto-gha "Репозиторий с проектной работой Русланы Бронниковой")
+![Репозиторий с проектной работой Русланы Бронниковой](https://github.com/ruslanabronnikova/express-mesto-gha "")
 
 
 ## Директории
