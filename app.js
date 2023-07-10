@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
-app.patch('/404', handleNotFound);
+app.use(handleNotFound);
 
 app.listen(3000, () => {
   console.log('Привет, я сервер!')

@@ -1,4 +1,12 @@
 const Card = require('../models/card');
+const mongoose = require('mongoose');
+
+const HTTP_STATUS_CODES = {
+  OK: 200,
+  BAD_REQUEST: 400,
+  NOT_FOUND: 404,
+  SERVER_ERROR: 500,
+};
 
 const createCard = (req, res) => {
   console.log(req.user._id);
@@ -7,22 +15,30 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      res.send(card)
+      res.status(HTTP_STATUS_CODES.OK).send(card);
     })
     .catch((error) => {
-      res.status(400).send(error)
-    })
-}
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else {
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+      }
+    });
+};
 
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      res.send(cards);
+      res.status(HTTP_STATUS_CODES.OK).send(cards);
     })
     .catch((error) => {
-      res.status(400).send(error);
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else {
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+      }
     });
-}
+};
 
 const deleteCardsId = (req, res) => {
   const { cardId } = req.params;
@@ -30,13 +46,21 @@ const deleteCardsId = (req, res) => {
   Card.findByIdAndDelete(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка с указанным _id не найдена.' });
+        return res
+          .status(HTTP_STATUS_CODES.NOT_FOUND)
+          .send({ message: 'Карточка с указанным _id не найдена.' });
       }
 
       res.send({ message: 'Карточка успешно удалена' });
     })
     .catch((error) => {
-      res.status(400).send(error);
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else {
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+      }
     });
 };
 
@@ -48,16 +72,23 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-
-  .then((updatedCard) => {
-    if (!updatedCard) {
-      return res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
-    }
-    res.send(updatedCard);
-  })
-  .catch(error => {
-    res.status(400).send(error);
-  });
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        return res
+          .status(HTTP_STATUS_CODES.NOT_FOUND)
+          .send({ message: 'Передан несуществующий _id карточки.' });
+      }
+      res.send(updatedCard);
+    })
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else {
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+      }
+    });
 };
 
 const dislikeCard = (req, res) => {
@@ -68,16 +99,23 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-
-  .then((updatedCard) => {
-    if (!updatedCard) {
-      return res.status(404).send({ message: 'Передан несуществующий _id карточки.' });
-    }
-    res.send(updatedCard);
-  })
-  .catch(error => {
-    res.status(400).send(error);
-  });
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        return res
+          .status(HTTP_STATUS_CODES.NOT_FOUND)
+          .send({ message: 'Передан несуществующий _id карточки.' });
+      }
+      res.send(updatedCard);
+    })
+    .catch((error) => {
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      } else {
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+      }
+    });
 };
 
 module.exports = {
@@ -85,5 +123,5 @@ module.exports = {
   getCards,
   deleteCardsId,
   likeCard,
-  dislikeCard
-}
+  dislikeCard,
+};
