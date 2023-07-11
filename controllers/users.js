@@ -15,10 +15,11 @@ const createUser = (req, res) => {
       res.status(HTTP_STATUS_CODES.OK).send(user);
     })
     .catch((error) => {
+      console.log(error)
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -29,10 +30,11 @@ const getUsers = (req, res) => {
       res.status(HTTP_STATUS_CODES.OK).send(users);
     })
     .catch((error) => {
+      console.log(error)
       if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -51,12 +53,11 @@ const getUserById = (req, res) => {
       res.status(HTTP_STATUS_CODES.OK).send(user);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
-      } else if (error instanceof mongoose.Error.CastError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      console.log(error)
+      if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -80,12 +81,11 @@ const updateUser = (req, res) => {
       res.status(HTTP_STATUS_CODES.OK).send(updatedUser);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
-      } else if (error instanceof mongoose.Error.CastError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      console.log(error)
+      if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -108,12 +108,11 @@ const updateAvatar = (req, res) => {
       res.status(HTTP_STATUS_CODES.OK).send(updatedUser);
     })
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
-      } else if (error instanceof mongoose.Error.CastError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send(error);
+      console.log(error)
+      if (error instanceof mongoose.Error.CastError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send(error);
+        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
