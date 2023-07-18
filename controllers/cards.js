@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
-const HTTP_STATUS_CODES = require('../constants/httpStatusCodes');
+const { HTTP_STATUS_CODES } = require('../constants/httpStatusCodes');
 
 const createCard = (req, res) => {
   console.log(req.user._id);
@@ -13,7 +13,7 @@ const createCard = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.ValidationError) {
+      if (err.name === 'ValidationError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -52,7 +52,7 @@ const deleteCardsId = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
+      if (err.name === 'CastError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -78,7 +78,7 @@ const likeCard = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
+      if (err.name === 'CastError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -104,7 +104,7 @@ const dislikeCard = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
+      if (err.name === 'CastError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });

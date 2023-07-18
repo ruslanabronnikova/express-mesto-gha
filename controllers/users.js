@@ -3,7 +3,8 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { JWT_SECRET } = require('../constants/jwt')
-const HTTP_STATUS_CODES = require('../constants/httpStatusCodes')
+const { HTTP_STATUS_CODES } = require('../constants/httpStatusCodes')
+
 const createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
 
@@ -15,7 +16,9 @@ const createUser = (req, res, next) => {
         })
         .catch((error) => {
           console.log(error)
-          if (error instanceof mongoose.Error.ValidationError) {
+          if (error.code === 11000) {
+            res.status(HTTP_STATUS_CODES.CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
+          } else if (err.name === 'ValidationError') {
             res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
           } else {
             res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -57,7 +60,7 @@ const getUsers = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.ValidationError) {
+      if (err.name === 'ValidationError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -98,7 +101,7 @@ const getUserById = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
+      if (err.name === 'CastError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
@@ -149,7 +152,7 @@ const updateAvatar = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
+      if (err.name === 'CastError') {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
       } else {
         res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
