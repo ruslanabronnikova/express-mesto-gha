@@ -1,12 +1,6 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
-
-const HTTP_STATUS_CODES = {
-  OK: 200,
-  BAD_REQUEST: 400,
-  NOT_FOUND: 404,
-  SERVER_ERROR: 500,
-};
+const HTTP_STATUS_CODES = require('../constants/httpStatusCodes');
 
 const createCard = (req, res) => {
   console.log(req.user._id);
@@ -34,16 +28,13 @@ const getCards = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
-      } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
-      }
+      res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
     });
 };
 
 const deleteCardsId = (req, res) => {
   const { cardId } = req.params;
+  const { userId } = req.user;
 
   Card.findByIdAndDelete(cardId)
     .then((card) => {
@@ -53,7 +44,11 @@ const deleteCardsId = (req, res) => {
           .send({ message: 'Карточка с указанным _id не найдена.' });
       }
 
-      res.send({ message: 'Карточка успешно удалена' });
+      const { owner: cardOwnerId } = card;
+      if (cardOwnerId.valueOf() !== userId){
+        return res.status(403).send({message: 'Нет прав доступа'});
+      }
+      res.send({ message: 'Карточка успешно удалена' });  
     })
     .catch((error) => {
       console.log(error)

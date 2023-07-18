@@ -1,26 +1,52 @@
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { JWT_SECRET } = require('../constants/jwt')
+const HTTP_STATUS_CODES = require('../constants/httpStatusCodes')
+const createUser = (req, res, next) => {
+  const { name, about, avatar, email, password } = req.body;
 
-const HTTP_STATUS_CODES = {
-  OK: 200,
-  BAD_REQUEST: 400,
-  NOT_FOUND: 404,
-  SERVER_ERROR: 500,
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({ name, about, avatar, email, password: hash })
+        .then((user) => {
+          res.status(HTTP_STATUS_CODES.OK).send(user);
+        })
+        .catch((error) => {
+          console.log(error)
+          if (error instanceof mongoose.Error.ValidationError) {
+            res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+          } else {
+            res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+          }
+        });
+    })
+    .catch((err) => {
+      next((err));
+    });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+const loginUser = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
     .then((user) => {
-      res.status(HTTP_STATUS_CODES.OK).send(user);
-    })
-    .catch((error) => {
-      console.log(error)
-      if (error instanceof mongoose.Error.ValidationError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
-      } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+      if (!user) {
+        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: "Неправильные почта или пароль" })
       }
+
+      bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: "Неправильные почта или пароль" })
+          }
+          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });;
+          return res.send({ JWT: token })
+        });
+    })
+    .catch((err) => {
+      next((err))
     });
 };
 
@@ -38,6 +64,24 @@ const getUsers = (req, res) => {
       }
     });
 };
+
+const getUserInfo = (req, res) => {
+  const { id } = req.params;
+
+  User.findById(id)
+    .then((user) => {
+      if (user) {
+        return res.send({ user });
+      } else {
+        return res.status(404).send({ message: 'Пользователь с указанным id не найден' });
+      }
+    })
+    .catch((error) => {
+      // Обработка ошибок базы данных или других ошибок
+      return res.status(500).send({ message: 'Произошла ошибка при получении информации о пользователе' });
+    });
+};
+
 
 const getUserById = (req, res) => {
   const { id } = req.params;
@@ -82,11 +126,7 @@ const updateUser = (req, res) => {
     })
     .catch((error) => {
       console.log(error)
-      if (error instanceof mongoose.Error.CastError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
-      } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
-      }
+      res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
     });
 };
 
@@ -123,4 +163,6 @@ module.exports = {
   getUserById,
   updateUser,
   updateAvatar,
+  loginUser,
+  getUserInfo
 };
