@@ -1,16 +1,38 @@
 const router = require('express').Router();
-const authMiddleW = require('../middlewares/authMiddleW')
-
+const { CorrectUrl } = require('../constants/correctUrl');
+const { celebrate, Joi } = require('celebrate');
 const { createCard, getCards, deleteCardsId, likeCard, dislikeCard } = require('../controllers/cards')
 
-router.post('/', authMiddleW, createCard);
+// Валидация запроса на создание карточки
+router.post('/', celebrate({
+  body: Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string().pattern(CorrectUrl),
+  }),
+}), createCard);
 
-router.get('/', authMiddleW, getCards);
+// Валидация запроса на удаление карточки
+router.delete('/:cardId', celebrate({
+  params: Joi.object({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), deleteCardsId);
 
-router.delete('/:cardId', authMiddleW, deleteCardsId);
+// Валидация запроса на добавление лайка на карточке
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), likeCard);
 
-router.put('/:cardId/likes', authMiddleW, likeCard);
+// Валидация запроса на удаление лайка с карточки
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), dislikeCard);
 
-router.delete('/:cardId/likes', authMiddleW, dislikeCard);
+// Остальные роуты без валидации
+router.get('/', getCards);
 
 module.exports = router;

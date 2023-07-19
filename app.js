@@ -7,6 +7,7 @@ const cardsRouter = require('./routes/cards');
 const handleNotFound = require('./routes/errorHandler');
 mongoose.connect(`mongodb://127.0.0.1:27017/mestodb`);
 const authMiddleW = require('./middlewares/authMiddleW')
+const errorMiddleW = require('./middlewares/errorMiddleW')
 const cookieParser = require('cookie-parser');
 const {createUser, loginUser} = require('./controllers/users');
 
@@ -22,6 +23,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 app.use(handleNotFound);
+app.use(errorMiddleW);
 
 app.listen(3000, () => {
   console.log('Привет, я сервер!')
