@@ -1,8 +1,7 @@
-// errorHandler.js
-const NOT_FOUND = 404;
+const NotFound = require('../classErrors/NotFound')
 
-const handleNotFound = (req, res) => {
-  res.status(NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
+const handleNotFound = (req, res, next) => {
+  next(new NotFound('Запрашиваемый ресурс не найден'));
 };
 
 module.exports = handleNotFound;

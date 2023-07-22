@@ -1,65 +1,62 @@
 const Card = require('../models/card');
-const { HTTP_STATUS_CODES } = require('../constants/httpStatusCodes');
 
-const createCard = (req, res) => {
+const BadRequest = require('../classErrors/BadRequest');
+const ForBidden = require('../classErrors/ForBidden');
+const NotFound = require('../classErrors/NotFound');
+
+const createCard = (req, res, next) => {
   console.log(req.user._id);
   const owner = req.user._id;
   const { name, link } = req.body;
 
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(HTTP_STATUS_CODES.OK).send(card);
+      res.status(200).send(card);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'ValidationError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'ValidationError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.status(HTTP_STATUS_CODES.OK).send(cards);
+      res.status(200).send(cards);
     })
     .catch((error) => {
       console.log(error)
-      res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+      next(error)
     });
 };
 
-const deleteCardsId = (req, res) => {
+const deleteCardsId = (req, res, next) => {
   const { cardId } = req.params;
   const { userId } = req.user;
 
   Card.findByIdAndDelete(cardId)
     .then((card) => {
-      if (!card) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
-      }
+      if (!card) throw new NotFound('Карточка с указанным _id не найдена.');
 
       const { owner: cardOwnerId } = card;
-      if (cardOwnerId.valueOf() !== userId){
-        return res.status(403).send({message: 'Нет прав доступа'});
-      }
-      res.send({ message: 'Карточка успешно удалена' });  
+      if (cardOwnerId.valueOf() !== userId) throw new ForBidden('Нет прав доступа');
+      res.send({ message: 'Карточка успешно удалена' });
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'CastError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'CastError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -68,24 +65,20 @@ const likeCard = (req, res) => {
     { new: true }
   )
     .then((updatedCard) => {
-      if (!updatedCard) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Передан несуществующий _id карточки.' });
-      }
+      if (!updatedCard) throw new NotFound('Передан несуществующий _id карточки.');
       res.send(updatedCard);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'CastError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'CastError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -94,19 +87,15 @@ const dislikeCard = (req, res) => {
     { new: true }
   )
     .then((updatedCard) => {
-      if (!updatedCard) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Передан несуществующий _id карточки.' });
-      }
+      if (!updatedCard) throw new NotFound('Передан несуществующий _id карточки.');
       res.send(updatedCard);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'CastError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'CastError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };

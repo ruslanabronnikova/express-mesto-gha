@@ -1,8 +1,12 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { JWT_SECRET } = require('../constants/jwt')
-const { HTTP_STATUS_CODES } = require('../constants/httpStatusCodes')
+const { JWT_SECRET } = require('../constants/jwt');
+
+const BadRequest = require('../classErrors/BadRequest');
+const NotFound = require('../classErrors/NotFound');
+const UnAuthorized = require('../classErrors/UnAuthorized');
+const Conflict = require('../classErrors/Conflict');
 
 const createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
@@ -11,21 +15,21 @@ const createUser = (req, res, next) => {
     .then((hash) => {
       User.create({ name, about, avatar, email, password: hash })
         .then((user) => {
-          res.status(HTTP_STATUS_CODES.OK).send(user);
+          res.status(200).send(user);
         })
         .catch((error) => {
           console.log(error)
           if (error.code === 11000) {
-            res.status(HTTP_STATUS_CODES.CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
-          } else if (err.name === 'ValidationError') {
-            res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+            next(new Conflict('Пользователь с таким электронным адресом уже зарегистрирован'));
+          } else if (error.name === 'ValidationError') {
+            next(new BadRequest('Невалидные данные'));
           } else {
-            res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+            next(error)
           }
         });
     })
-    .catch((err) => {
-      next((err));
+    .catch((error) => {
+      next((error));
     });
 };
 
@@ -34,76 +38,64 @@ const loginUser = (req, res, next) => {
 
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) {
-        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: "Неправильные почта или пароль" })
-      }
-
+      if (!user) throw new UnAuthorized('Неправильные почта или пароль');
       bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) {
-            return res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: "Неправильные почта или пароль" })
-          }
+          if (!matched) throw new UnAuthorized('Неправильные почта или пароль');
           const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });;
           return res.send({ JWT: token })
         });
     })
-    .catch((err) => {
-      next((err))
+    .catch((error) => {
+      next((error))
     });
 };
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      res.status(HTTP_STATUS_CODES.OK).send(users);
+      res.status(200).send(users);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'ValidationError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'ValidationError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
 
-const getUserInfo = (req, res) => {
+const getUserInfo = (req, res, next) => {
   const { id } = req.params;
 
   User.findById(id)
     .then((user) => {
       if (user) {
         return res.send({ user });
-      } else {
-        return res.status(404).send({ message: 'Пользователь с указанным id не найден' });
-      }
+      } else throw new NotFound('Пользователь с указанным id не найден');
     })
     .catch((error) => {
-      // Обработка ошибок базы данных или других ошибок
-      return res.status(500).send({ message: 'Произошла ошибка при получении информации о пользователе' });
+      console.log(error)
+      next(error)
     });
 };
 
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { id } = req.params;
 
   User.findById(id)
     .then((user) => {
-      if (!user) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-      }
-
-      res.status(HTTP_STATUS_CODES.OK).send(user);
+      if (!user) throw new NotFound('Пользователь с указанным id не найден');
+      res.status(200).send(user);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'CastError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'CastError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
@@ -118,17 +110,12 @@ const updateUser = (req, res) => {
     { new: true, runValidators: true }
   )
     .then(updatedUser => {
-      if (!updatedUser) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Пользователь с указанным _id не найден.' });
-      }
-
-      res.status(HTTP_STATUS_CODES.OK).send(updatedUser);
+      if (!updatedUser) throw new NotFound('Пользователь с указанным id не найден');
+      res.status(200).send(updatedUser);
     })
     .catch((error) => {
       console.log(error)
-      res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+      next(error)
     });
 };
 
@@ -142,19 +129,15 @@ const updateAvatar = (req, res) => {
     { new: true, runValidators: true }
   )
     .then(updatedUser => {
-      if (!updatedUser) {
-        return res
-          .status(HTTP_STATUS_CODES.NOT_FOUND)
-          .send({ message: 'Пользователь с указанным _id не найден.' });
-      }
-      res.status(HTTP_STATUS_CODES.OK).send(updatedUser);
+      if (!updatedUser) throw new NotFound('Пользователь с указанным id не найден');
+      res.status(200).send(updatedUser);
     })
     .catch((error) => {
       console.log(error)
-      if (err.name === 'CastError') {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).send({ message: 'Невалидные данные' });
+      if (error.name === 'CastError') {
+        next(new BadRequest('Невалидные данные'));
       } else {
-        res.status(HTTP_STATUS_CODES.SERVER_ERROR).send({ message: 'Произошла ошибка на сервере' });
+        next(error)
       }
     });
 };
