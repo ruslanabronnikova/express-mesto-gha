@@ -1,7 +1,13 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { CorrectUrl } = require('../constants/correctUrl');
-const { getUsers, getUserById, updateUser, updateAvatar, getUserInfo } = require('../controllers/users');
+const {
+  getUsers,
+  getUserById,
+  updateUser,
+  updateAvatar,
+  getUserInfo,
+} = require('../controllers/users');
 
 // Валидация запроса на получение информации о текущем пользователе
 router.get('/me', getUserInfo);
@@ -30,6 +36,5 @@ router.get('/:id', celebrate({
     id: Joi.string().hex().length(24).required(),
   }),
 }), getUserById);
-
 
 module.exports = router;

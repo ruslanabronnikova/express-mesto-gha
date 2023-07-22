@@ -1,18 +1,16 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../constants/jwt');
 
-const UnAuthorized = require('../classErrors/UnAuthorized')
+const UnAuthorized = require('../classErrors/UnAuthorized');
 
 const authMiddleW = (req, res, next) => {
   const { authorization } = req.headers;
   const bearer = 'Bearer ';
-  console.log(authorization)
   if (!authorization || !authorization.startsWith(bearer)) {
     return next(new UnAuthorized('Неправильные почта или пароль'));
   }
   const token = authorization.replace(bearer, '');
   let payload;
-  console.log(token)
   try {
     payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
@@ -20,6 +18,8 @@ const authMiddleW = (req, res, next) => {
   } catch (err) {
     return next(new UnAuthorized('Неправильные почта или пароль'));
   }
+
+  return next();
 };
 
 module.exports = authMiddleW;

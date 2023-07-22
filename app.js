@@ -4,9 +4,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 
-const { CorrectUrl } = require('./constants/correctUrl');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi } = require('celebrate');
+const { CorrectUrl } = require('./constants/correctUrl');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const handleNotFound = require('./routes/errorHandler');

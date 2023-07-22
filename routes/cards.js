@@ -1,8 +1,13 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { CorrectUrl } = require('../constants/correctUrl');
-const { createCard, getCards, deleteCardsId, likeCard, dislikeCard } = require('../controllers/cards');
-
+const {
+  createCard,
+  getCards,
+  deleteCardsId,
+  likeCard,
+  dislikeCard,
+} = require('../controllers/cards');
 // Валидация запроса на создание карточки
 router.post('/', celebrate({
   body: Joi.object({
