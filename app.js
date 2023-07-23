@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 
+const { errors } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi } = require('celebrate');
 const { CorrectUrl } = require('./constants/correctUrl');
@@ -44,6 +45,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 app.use(handleNotFound);
+app.use(errors());
 app.use(errorMiddleW);
 
 app.listen(3000, () => {

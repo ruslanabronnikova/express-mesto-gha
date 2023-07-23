@@ -27,9 +27,9 @@ const createUser = (req, res, next) => {
         password: hash,
       })
 
-        .then((user) => {
-          res.status(200).send(user);
-        })
+        .then(() => res.status(200).send({
+          name, about, avatar, email,
+        }))
         .catch((error) => {
           if (error.code === 11000) {
             next(new Conflict('Пользователь с таким электронным адресом уже зарегистрирован'));
@@ -51,7 +51,7 @@ const loginUser = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) throw new UnAuthorized('Неправильные почта или пароль');
-      bcrypt.compare(password, user.password)
+      return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) throw new UnAuthorized('Неправильные почта или пароль');
           const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
@@ -59,7 +59,7 @@ const loginUser = (req, res, next) => {
         });
     })
     .catch((error) => {
-      next((error));
+      next(error);
     });
 };
 
@@ -77,7 +77,7 @@ const getUsers = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  const { id } = req.params;
+  const { id } = req.user._id;
 
   User.findById(id)
     .then((user) => {

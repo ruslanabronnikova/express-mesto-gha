@@ -18,8 +18,6 @@ const authMiddleW = (req, res, next) => {
   } catch (err) {
     return next(new UnAuthorized('Неправильные почта или пароль'));
   }
-
-  return next();
 };
 
 module.exports = authMiddleW;

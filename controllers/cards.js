@@ -5,10 +5,9 @@ const ForBidden = require('../classErrors/ForBidden');
 const NotFound = require('../classErrors/NotFound');
 
 const createCard = (req, res, next) => {
-  const owner = req.user._id;
   const { name, link } = req.body;
 
-  Card.create({ name, link, owner })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => {
       res.status(200).send(card);
     })
@@ -32,17 +31,19 @@ const getCards = (req, res, next) => {
 };
 
 const deleteCardsId = (req, res, next) => {
-  const { cardId } = req.params;
-  const { userId } = req.user;
+  const cardId = req.params.cardId;
+  const userId = req.user._id;
 
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) throw new NotFound('Карточка с указанным _id не найдена.');
 
-      const { owner: cardOwnerId } = card;
-      if (cardOwnerId.valueOf() !== userId) throw new ForBidden('Нет прав доступа');
-      res.send({ message: 'Карточка успешно удалена' });
+      if (!card.owner.equals(userId)) throw new ForBidden('Нет прав доступа');
+
+      // Удаляем карточку на втором этапе после проверки прав доступа
+      return card.deleteOne();
     })
+    .then(() => res.status(200).send({ message: 'Карточка успешно удалена' }))
     .catch((error) => {
       if (error.name === 'CastError') {
         next(new BadRequest('Невалидные данные'));
