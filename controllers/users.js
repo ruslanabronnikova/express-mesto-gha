@@ -77,9 +77,9 @@ const getUsers = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  const { id } = req.user._id;
+  const userId = req.user._id;
 
-  User.findById(id)
+  User.findById(userId)
     .then((user) => {
       if (user) {
         return res.send({ user });
@@ -90,6 +90,7 @@ const getUserInfo = (req, res, next) => {
       next(error);
     });
 };
+
 
 const getUserById = (req, res, next) => {
   const { id } = req.params;
