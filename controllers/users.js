@@ -91,7 +91,6 @@ const getUserInfo = (req, res, next) => {
     });
 };
 
-
 const getUserById = (req, res, next) => {
   const { id } = req.params;
 
