@@ -14,10 +14,11 @@ const authMiddleW = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
   } catch (err) {
     return next(new UnAuthorized('Неправильные почта или пароль'));
   }
+
+  return next();
 };
 
 module.exports = authMiddleW;

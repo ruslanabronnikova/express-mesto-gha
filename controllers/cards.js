@@ -31,8 +31,8 @@ const getCards = (req, res, next) => {
 };
 
 const deleteCardsId = (req, res, next) => {
-  const { cardId } = req.params.cardId;
-  const { userId } = req.user._id;
+  const { cardId } = req.params;
+  const userId = req.user._id;
 
   Card.findById(cardId)
     .then((card) => {
